@@ -2,7 +2,7 @@
 * Set reminders for when you reach a certain level
 * Set wether or not an audio alert should be played
 * Set wether or not the reminder should be read by the System TTS engine
-* Set your character name to only receive reminders for your chararcter (usefull in party play)
+* Set your character name to only receive reminders for your chararcter (useful in party play)
 
 
 ## How it works
