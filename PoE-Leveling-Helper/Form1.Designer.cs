@@ -243,7 +243,7 @@ namespace PoE_Leveling_Helper
             this.ClientSize = new System.Drawing.Size(894, 625);
             this.Controls.Add(this.Reminders);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "PoE Leveling Helper";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Reminders.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
