@@ -68,5 +68,78 @@ namespace PoE_Leveling_Helper.Properties {
                 return ResourceManager.GetStream("alert", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Twilight Strand
+        ///The Coast
+        ///The Tidal Island
+        ///The Mud Flats
+        ///The Fetid Pool
+        ///The Submerged Passage
+        ///The Flooded Depths
+        ///The Ledge
+        ///The Climb
+        ///The Lower Prison
+        ///The Upper Prison
+        ///Prisoner&apos;s Gate
+        ///The Ship Graveyard
+        ///The Cavern of Wrath
+        ///The Ship Graveyard Cave
+        ///The Cavern of Anger
+        ///Lioneye&apos;s Watch
+        ///The Southern Forest
+        ///The Old Fields
+        ///The Den
+        ///The Crossroads
+        ///The Chamber of Sins Level 1
+        ///The Riverways
+        ///The Fellshrine Ruins
+        ///The Broken Bridge
+        ///The Chamber of Sins Level 2
+        ///The Crypt Level 1
+        ///The Western Fo [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string areas_part1 {
+            get {
+                return ResourceManager.GetString("areas_part1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Twilight Strand
+        ///The Coast
+        ///The Tidal Island
+        ///The Mud Flats
+        ///The Karui Fortress
+        ///The Ridge
+        ///The Lower Prison
+        ///Shavronne&apos;s Tower
+        ///Prisoner&apos;s Gate
+        ///The Riverways
+        ///The Wetlands
+        ///The Western Forest
+        ///The Southern Forest
+        ///The Cavern of Anger
+        ///The Beacon
+        ///The Brine King&apos;s Reef
+        ///Lioneye&apos;s Watch
+        ///The Broken Bridge
+        ///The Crossroads
+        ///The Fellshrine Ruins
+        ///The Crypt
+        ///The Chamber of Sins Level 1
+        ///The Chamber of Sins Level 2
+        ///Maligaro&apos;s Sanctum
+        ///The Den
+        ///The Ashen Fields
+        ///The Northern Forest
+        ///The Dread Thicket
+        ///The Ca [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string areas_part2 {
+            get {
+                return ResourceManager.GetString("areas_part2", resourceCulture);
+            }
+        }
     }
 }

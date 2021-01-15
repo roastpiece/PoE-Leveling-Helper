@@ -82,5 +82,17 @@ namespace PoE_Leveling_Helper.Properties {
                 this["data_reminders"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool mark_complete {
+            get {
+                return ((bool)(this["mark_complete"]));
+            }
+            set {
+                this["mark_complete"] = value;
+            }
+        }
     }
 }
