@@ -32,8 +32,7 @@ namespace PoE_Leveling_Helper
             checkBox_alert.Checked = Settings.Default.play_alert_sound;
             checkBox_tts.Checked = Settings.Default.use_tts;
 
-            _dataTable = new DataTable();
-            _dataTable.TableName = "reminders";
+            _dataTable = new DataTable("reminders");
             _dataTable.Columns.Add("Level");
             _dataTable.Columns.Add("Reminder");
 
@@ -168,7 +167,6 @@ namespace PoE_Leveling_Helper
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             StringWriter writer = new StringWriter();
-            //_dataTable.Rows.Add("50", "Yay");
 
             _dataTable.WriteXml(writer, XmlWriteMode.IgnoreSchema, true);
 
