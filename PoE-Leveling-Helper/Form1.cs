@@ -98,16 +98,24 @@ namespace PoE_Leveling_Helper
 
         private void OpenLogFile()
         {
-            var filename = txt_poe_folder.Text + @"\logs\Client.txt";
-            FileInfo logFileInfo = new FileInfo(filename);
+            try
+            {
+                var filename = txt_poe_folder.Text + @"\logs\Client.txt";
+                FileInfo logFileInfo = new FileInfo(filename);
 
-            _fileStream = logFileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                _fileStream = logFileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
-            if (_lastFileSize == -1)
+                if (_lastFileSize == -1)
+                    _lastFileSize = logFileInfo.Length;
+
+                _fileStream.Seek(_lastFileSize, SeekOrigin.Begin);
                 _lastFileSize = logFileInfo.Length;
-
-            _fileStream.Seek(_lastFileSize, SeekOrigin.Begin);
-            _lastFileSize = logFileInfo.Length;
+            }
+            catch (Exception)
+            {
+                MessageBox.Show(
+                    "Could not open the Log-File. Please check if the path to your Path of Exile installation is correct.");
+            }
         }
 
         private void CheckAndNotify(string name, string level)
