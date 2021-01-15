@@ -29,8 +29,10 @@ namespace PoE_Leveling_Helper
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.Reminders = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.btn_test = new System.Windows.Forms.Button();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.checkBox_alert = new System.Windows.Forms.CheckBox();
@@ -41,12 +43,12 @@ namespace PoE_Leveling_Helper
             this.txt_poe_folder = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.folderBrowserDialog_poe = new System.Windows.Forms.FolderBrowserDialog();
-            this.fileSystemWatcher1 = new System.IO.FileSystemWatcher();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.Reminders.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.tabPage2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).BeginInit();
             this.SuspendLayout();
             // 
             // Reminders
@@ -64,6 +66,7 @@ namespace PoE_Leveling_Helper
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.btn_test);
             this.tabPage1.Controls.Add(this.dataGridView1);
             this.tabPage1.Location = new System.Drawing.Point(4, 24);
             this.tabPage1.Name = "tabPage1";
@@ -72,6 +75,18 @@ namespace PoE_Leveling_Helper
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Reminders";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // btn_test
+            // 
+            this.btn_test.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_test.Location = new System.Drawing.Point(783, 546);
+            this.btn_test.Name = "btn_test";
+            this.btn_test.Size = new System.Drawing.Size(75, 23);
+            this.btn_test.TabIndex = 1;
+            this.btn_test.Text = "test button";
+            this.btn_test.UseVisualStyleBackColor = true;
+            this.btn_test.Visible = false;
+            this.btn_test.Click += new System.EventHandler(this.button1_Click);
             // 
             // dataGridView1
             // 
@@ -169,11 +184,10 @@ namespace PoE_Leveling_Helper
             this.label1.TabIndex = 0;
             this.label1.Text = "Path of Exile Directory";
             // 
-            // fileSystemWatcher1
+            // timer1
             // 
-            this.fileSystemWatcher1.EnableRaisingEvents = true;
-            this.fileSystemWatcher1.SynchronizingObject = this;
-            this.fileSystemWatcher1.Changed += new System.IO.FileSystemEventHandler(this.fileSystemWatcher1_Changed);
+            this.timer1.Interval = 500;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // Form1
             // 
@@ -189,7 +203,6 @@ namespace PoE_Leveling_Helper
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -204,11 +217,13 @@ namespace PoE_Leveling_Helper
         private System.Windows.Forms.TextBox txt_poe_folder;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog_poe;
         private System.Windows.Forms.DataGridView dataGridView1;
-        private System.IO.FileSystemWatcher fileSystemWatcher1;
         private System.Windows.Forms.TextBox txt_char_name;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox checkBox_tts;
         private System.Windows.Forms.CheckBox checkBox_alert;
+        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Button btn_test;
     }
 }
 

@@ -9,6 +9,7 @@ using System.Media;
 using System.Resources;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using PoE_Leveling_Helper.Properties;
@@ -19,13 +20,19 @@ namespace PoE_Leveling_Helper
     {
         private readonly SoundPlayer _soundPlayer;
         private readonly DataTable _dataTable;
-        private long _lastFileLength;
+        private Stream _fileStream;
+        private long _lastFileSize = -1;
+
         public Form1()
         {
             _soundPlayer = new SoundPlayer(Resources.alert);
             _soundPlayer.Load();
 
             InitializeComponent();
+
+#if DEBUG
+            btn_test.Visible = true;
+#endif
 
             txt_poe_folder.Text = Settings.Default.poe_path;
             txt_char_name.Text = Settings.Default.char_name;
@@ -42,6 +49,10 @@ namespace PoE_Leveling_Helper
             dataGridView1.DataSource = _dataTable;
             dataGridView1.Columns[0].Width = 60;
             dataGridView1.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+
+            OpenLogFile();
+
+            timer1.Start();
         }
 
         private void btn_browse_poe_folder_Click(object sender, EventArgs e)
@@ -52,31 +63,22 @@ namespace PoE_Leveling_Helper
                 Settings.Default.poe_path = folderBrowserDialog_poe.SelectedPath;
                 Settings.Default.Save();
 
-                fileSystemWatcher1.Path = folderBrowserDialog_poe.SelectedPath + @"\logs\";
-                fileSystemWatcher1.NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
-                fileSystemWatcher1.Filter = "Client.txt";
-
-                var filename = txt_poe_folder.Text + @"\logs\Client.txt";
-                FileInfo logFileInfo = new FileInfo(filename);
-                _lastFileLength = logFileInfo.Length;
+                _fileStream.Dispose();
             }
         }
 
-        private void fileSystemWatcher1_Changed(object sender, FileSystemEventArgs e)
+        private void LogFileWatchTask()
         {
-            var filename = txt_poe_folder.Text + @"\logs\Client.txt";
-            FileInfo logFileInfo = new FileInfo(filename);
-
-            // ReSharper disable once ConvertToUsingDeclaration
-            using (var stream = logFileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            try
             {
-                stream.Seek(_lastFileLength, SeekOrigin.Begin);
-                using (var reader = new StreamReader(stream))
-                {
-                    var linesString = reader.ReadToEnd();
-                    var lines = linesString.Split("\r\n");
+                if (!_fileStream.CanRead)
+                    OpenLogFile();
 
-                    foreach (var line in lines)
+                using (var reader = new StreamReader(_fileStream))
+                {
+                    string line;
+
+                    while ((line = reader.ReadLine()) != null)
                     {
                         var m = Regex.Match(line, @"^.*: (?<name>\w+) \(\w+\) is now level (?<level>\d+$)");
                         if (m.Success)
@@ -88,26 +90,59 @@ namespace PoE_Leveling_Helper
                     }
                 }
             }
+            catch (ObjectDisposedException)
+            {
+                OpenLogFile();
+            }
+        }
+
+        private void OpenLogFile()
+        {
+            var filename = txt_poe_folder.Text + @"\logs\Client.txt";
+            FileInfo logFileInfo = new FileInfo(filename);
+
+            _fileStream = logFileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+            if (_lastFileSize == -1)
+                _lastFileSize = logFileInfo.Length;
+
+            _fileStream.Seek(_lastFileSize, SeekOrigin.Begin);
+            _lastFileSize = logFileInfo.Length;
         }
 
         private void CheckAndNotify(string name, string level)
         {
             foreach (DataGridViewRow row in dataGridView1.Rows)
+                row.Selected = false;
+
+            string textToSpeak = "";
+            bool foundMatch = false;
+
+            foreach (DataGridViewRow row in dataGridView1.Rows)
             {
-                string rLevel = (string)row.Cells[0].Value;
-                string rMessage = (string) row.Cells[1].Value;
-
-                if (rLevel == level && (txt_char_name.Text == "" || txt_char_name.Text == name))
+                try
                 {
-                    if (checkBox_alert.Checked)
-                        _soundPlayer.Play();
+                    string rLevel = (string) row.Cells[0].Value;
+                    string rMessage = (string) row.Cells[1].Value;
 
-                    if (checkBox_tts.Checked)
-                        Speak("Level " + rLevel + ". " + rMessage);
-
-                    row.Selected = true;
+                    if (rLevel == level && (txt_char_name.Text == "" || txt_char_name.Text == name))
+                    {
+                        foundMatch = true;
+                        textToSpeak += "Level " + rLevel + ". " + rMessage + ".\r\n";
+                        row.Selected = true;
+                    }
+                }
+                catch (Exception)
+                {
+                    // ignored
                 }
             }
+
+            if (foundMatch && checkBox_alert.Checked)
+                _soundPlayer.Play();
+
+            if (checkBox_tts.Checked)
+                Speak(textToSpeak);
         }
 
         // https://www.c-sharpcorner.com/blogs/using-systemspeech-with-net-core-30
@@ -128,13 +163,13 @@ namespace PoE_Leveling_Helper
                 tw.Write(command);  
   
                 // Setup the PS  
-                var start =  
-                    new System.Diagnostics.ProcessStartInfo()  
-                    {  
-                        FileName = "C:\\windows\\system32\\windowspowershell\\v1.0\\powershell.exe",  // CHUPA MICROSOFT 02-10-2019 23:45                    
-                        LoadUserProfile = false,  
-                        UseShellExecute = false,  
-                        CreateNoWindow = true,  
+                var start =
+                    new System.Diagnostics.ProcessStartInfo()
+                    {
+                        FileName = "C:\\windows\\system32\\windowspowershell\\v1.0\\powershell.exe",  // CHUPA MICROSOFT 02-10-2019 23:45
+                        LoadUserProfile = false,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
                         Arguments = $"-executionpolicy bypass -File {cFile}",  
                         WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden  
                     };  
@@ -166,12 +201,24 @@ namespace PoE_Leveling_Helper
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            _fileStream.Dispose();
+
             StringWriter writer = new StringWriter();
 
             _dataTable.WriteXml(writer, XmlWriteMode.IgnoreSchema, true);
 
             Settings.Default.data_reminders = writer.ToString();
             Settings.Default.Save();
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            LogFileWatchTask();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            CheckAndNotify("test", "101");
         }
     }
 }
