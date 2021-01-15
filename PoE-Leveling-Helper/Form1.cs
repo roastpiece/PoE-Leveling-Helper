@@ -220,5 +220,43 @@ namespace PoE_Leveling_Helper
         {
             CheckAndNotify("test", "101");
         }
+
+        private void btn_import_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("This will overwrite your current reminders. Continue?", "Attention",
+                MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
+                return;
+            
+            openFileDialog1.Filter = @"XML Files (*.xml)|*.xml|All Files (*.*)|*.*";
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                _dataTable.Clear();
+                using var stream = openFileDialog1.OpenFile();
+                _dataTable.ReadXml(stream);
+            }
+
+        }
+
+        private void btn_export_Click(object sender, EventArgs e)
+        {
+            saveFileDialog1.Filter = @"XML Files (*.xml)|*.xml|All Files (*.*)|*.*";
+            saveFileDialog1.DefaultExt = @".xml";
+            saveFileDialog1.AddExtension = true;
+
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                using var stream = saveFileDialog1.OpenFile();
+                _dataTable.WriteXml(stream, XmlWriteMode.IgnoreSchema, true);
+            }
+        }
+
+        private void btn_clear_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("This will clear ALL of your current reminders. Continue?", "Attention",
+                MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
+                return;
+
+            _dataTable.Clear();
+        }
     }
 }

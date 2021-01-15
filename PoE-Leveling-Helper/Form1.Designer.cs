@@ -32,6 +32,9 @@ namespace PoE_Leveling_Helper
             this.components = new System.ComponentModel.Container();
             this.Reminders = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.btn_clear = new System.Windows.Forms.Button();
+            this.btn_export = new System.Windows.Forms.Button();
+            this.btn_import = new System.Windows.Forms.Button();
             this.btn_test = new System.Windows.Forms.Button();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.tabPage2 = new System.Windows.Forms.TabPage();
@@ -45,6 +48,8 @@ namespace PoE_Leveling_Helper
             this.folderBrowserDialog_poe = new System.Windows.Forms.FolderBrowserDialog();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.Reminders.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
@@ -66,6 +71,9 @@ namespace PoE_Leveling_Helper
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.btn_clear);
+            this.tabPage1.Controls.Add(this.btn_export);
+            this.tabPage1.Controls.Add(this.btn_import);
             this.tabPage1.Controls.Add(this.btn_test);
             this.tabPage1.Controls.Add(this.dataGridView1);
             this.tabPage1.Location = new System.Drawing.Point(4, 24);
@@ -76,10 +84,40 @@ namespace PoE_Leveling_Helper
             this.tabPage1.Text = "Reminders";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // btn_clear
+            // 
+            this.btn_clear.Location = new System.Drawing.Point(783, 546);
+            this.btn_clear.Name = "btn_clear";
+            this.btn_clear.Size = new System.Drawing.Size(75, 23);
+            this.btn_clear.TabIndex = 4;
+            this.btn_clear.Text = "Clear";
+            this.btn_clear.UseVisualStyleBackColor = true;
+            this.btn_clear.Click += new System.EventHandler(this.btn_clear_Click);
+            // 
+            // btn_export
+            // 
+            this.btn_export.Location = new System.Drawing.Point(84, 546);
+            this.btn_export.Name = "btn_export";
+            this.btn_export.Size = new System.Drawing.Size(75, 23);
+            this.btn_export.TabIndex = 3;
+            this.btn_export.Text = "Export";
+            this.btn_export.UseVisualStyleBackColor = true;
+            this.btn_export.Click += new System.EventHandler(this.btn_export_Click);
+            // 
+            // btn_import
+            // 
+            this.btn_import.Location = new System.Drawing.Point(3, 546);
+            this.btn_import.Name = "btn_import";
+            this.btn_import.Size = new System.Drawing.Size(75, 23);
+            this.btn_import.TabIndex = 2;
+            this.btn_import.Text = "Import";
+            this.btn_import.UseVisualStyleBackColor = true;
+            this.btn_import.Click += new System.EventHandler(this.btn_import_Click);
+            // 
             // btn_test
             // 
             this.btn_test.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_test.Location = new System.Drawing.Point(783, 546);
+            this.btn_test.Location = new System.Drawing.Point(165, 546);
             this.btn_test.Name = "btn_test";
             this.btn_test.Size = new System.Drawing.Size(75, 23);
             this.btn_test.TabIndex = 1;
@@ -90,12 +128,14 @@ namespace PoE_Leveling_Helper
             // 
             // dataGridView1
             // 
+            this.dataGridView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridView1.Location = new System.Drawing.Point(3, 3);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowTemplate.Height = 25;
-            this.dataGridView1.Size = new System.Drawing.Size(855, 566);
+            this.dataGridView1.Size = new System.Drawing.Size(855, 537);
             this.dataGridView1.TabIndex = 0;
             // 
             // tabPage2
@@ -189,6 +229,10 @@ namespace PoE_Leveling_Helper
             this.timer1.Interval = 500;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -224,6 +268,11 @@ namespace PoE_Leveling_Helper
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.Button btn_test;
+        private System.Windows.Forms.Button btn_import;
+        private System.Windows.Forms.Button btn_export;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.Button btn_clear;
     }
 }
 
