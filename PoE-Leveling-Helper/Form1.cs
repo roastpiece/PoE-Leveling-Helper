@@ -147,6 +147,7 @@ namespace PoE_Leveling_Helper
             {
                 MessageBox.Show(
                     "Could not open the Log-File. Please check if the path to your Path of Exile installation is correct.");
+                Reminders.SelectTab(tabPage2);
             }
         }
 
