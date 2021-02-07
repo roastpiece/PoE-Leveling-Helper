@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="poe_path" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">C:\Program Files (x86)\Grinding Gear Games\Path of Exile</Value>
     </Setting>
     <Setting Name="use_tts" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
