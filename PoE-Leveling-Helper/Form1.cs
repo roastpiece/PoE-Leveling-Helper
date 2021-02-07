@@ -81,12 +81,15 @@ namespace PoE_Leveling_Helper
                 Settings.Default.poe_path = folderBrowserDialog_poe.SelectedPath;
                 Settings.Default.Save();
 
-                _fileStream.Dispose();
+                _fileStream?.Dispose();
             }
         }
 
         private void LogFileWatchTask()
         {
+            if (_fileStream == null)
+                return;
+
             try
             {
                 if (!_fileStream.CanRead)
@@ -261,7 +264,7 @@ namespace PoE_Leveling_Helper
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            _fileStream.Dispose();
+            _fileStream?.Dispose();
 
             StringWriter writer = new StringWriter();
 

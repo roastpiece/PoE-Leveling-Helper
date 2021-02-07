@@ -25,7 +25,7 @@ namespace PoE_Leveling_Helper.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Program Files (x86)\\Grinding Gear Games\\Path of Exile")]
         public string poe_path {
             get {
                 return ((string)(this["poe_path"]));
