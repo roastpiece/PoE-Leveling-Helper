@@ -43,6 +43,7 @@ namespace PoE_Leveling_Helper
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.Type = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.Level = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.After = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.Reminder = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Completed = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.tabPage2 = new System.Windows.Forms.TabPage();
@@ -59,10 +60,13 @@ namespace PoE_Leveling_Helper
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.Reminders.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.tabPage2.SuspendLayout();
+            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // Reminders
@@ -75,7 +79,7 @@ namespace PoE_Leveling_Helper
             this.Reminders.Location = new System.Drawing.Point(13, 13);
             this.Reminders.Name = "Reminders";
             this.Reminders.SelectedIndex = 0;
-            this.Reminders.Size = new System.Drawing.Size(759, 636);
+            this.Reminders.Size = new System.Drawing.Size(1239, 636);
             this.Reminders.TabIndex = 0;
             // 
             // tabPage1
@@ -91,7 +95,7 @@ namespace PoE_Leveling_Helper
             this.tabPage1.Location = new System.Drawing.Point(4, 24);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(751, 608);
+            this.tabPage1.Size = new System.Drawing.Size(1231, 608);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Reminders";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -99,7 +103,7 @@ namespace PoE_Leveling_Helper
             // btn_uncomplete_all
             // 
             this.btn_uncomplete_all.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_uncomplete_all.Location = new System.Drawing.Point(554, 582);
+            this.btn_uncomplete_all.Location = new System.Drawing.Point(1034, 582);
             this.btn_uncomplete_all.Name = "btn_uncomplete_all";
             this.btn_uncomplete_all.Size = new System.Drawing.Size(113, 23);
             this.btn_uncomplete_all.TabIndex = 7;
@@ -112,7 +116,7 @@ namespace PoE_Leveling_Helper
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label3.AutoSize = true;
             this.label3.Cursor = System.Windows.Forms.Cursors.Help;
-            this.label3.Location = new System.Drawing.Point(246, 586);
+            this.label3.Location = new System.Drawing.Point(273, 586);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(62, 15);
             this.label3.TabIndex = 6;
@@ -128,7 +132,7 @@ namespace PoE_Leveling_Helper
             "",
             "Part 1",
             "Part 2"});
-            this.comb_part.Location = new System.Drawing.Point(314, 582);
+            this.comb_part.Location = new System.Drawing.Point(341, 582);
             this.comb_part.Name = "comb_part";
             this.comb_part.Size = new System.Drawing.Size(80, 23);
             this.comb_part.TabIndex = 5;
@@ -136,7 +140,7 @@ namespace PoE_Leveling_Helper
             // btn_clear
             // 
             this.btn_clear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_clear.Location = new System.Drawing.Point(673, 582);
+            this.btn_clear.Location = new System.Drawing.Point(1153, 582);
             this.btn_clear.Name = "btn_clear";
             this.btn_clear.Size = new System.Drawing.Size(75, 23);
             this.btn_clear.TabIndex = 4;
@@ -171,15 +175,15 @@ namespace PoE_Leveling_Helper
             this.btn_test.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btn_test.Location = new System.Drawing.Point(165, 582);
             this.btn_test.Name = "btn_test";
-            this.btn_test.Size = new System.Drawing.Size(75, 23);
+            this.btn_test.Size = new System.Drawing.Size(102, 23);
             this.btn_test.TabIndex = 1;
-            this.btn_test.Text = "test button";
+            this.btn_test.Text = "Test selected";
             this.btn_test.UseVisualStyleBackColor = true;
-            this.btn_test.Visible = false;
             this.btn_test.Click += new System.EventHandler(this.button1_Click);
             // 
             // dataGridView1
             // 
+            this.dataGridView1.AllowUserToOrderColumns = true;
             this.dataGridView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -187,23 +191,25 @@ namespace PoE_Leveling_Helper
             this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Type,
             this.Level,
+            this.After,
             this.Reminder,
             this.Completed});
             this.dataGridView1.Location = new System.Drawing.Point(3, 3);
             this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.RowHeadersWidth = 80;
             this.dataGridView1.RowTemplate.Height = 25;
-            this.dataGridView1.Size = new System.Drawing.Size(745, 573);
+            this.dataGridView1.Size = new System.Drawing.Size(1225, 573);
             this.dataGridView1.TabIndex = 0;
+            this.dataGridView1.CellContextMenuStripNeeded += new System.Windows.Forms.DataGridViewCellContextMenuStripNeededEventHandler(this.dataGridView1_CellContextMenuStripNeeded);
+            this.dataGridView1.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.dataGridView1_DataBindingComplete);
+            this.dataGridView1.DefaultValuesNeeded += new System.Windows.Forms.DataGridViewRowEventHandler(this.dataGridView1_DefaultValuesNeeded);
             this.dataGridView1.EditingControlShowing += new System.Windows.Forms.DataGridViewEditingControlShowingEventHandler(this.dataGridView1_EditingControlShowing);
+            this.dataGridView1.RowsAdded += new System.Windows.Forms.DataGridViewRowsAddedEventHandler(this.dataGridView1_RowsAdded);
             // 
             // Type
             // 
             this.Type.DataPropertyName = "Type";
             this.Type.HeaderText = "Type";
-            this.Type.Items.AddRange(new object[] {
-            "Level",
-            "Zone: Part 1",
-            "Zone: Part 2"});
             this.Type.Name = "Type";
             // 
             // Level
@@ -212,6 +218,12 @@ namespace PoE_Leveling_Helper
             this.Level.HeaderText = "Type Value";
             this.Level.Name = "Level";
             this.Level.Width = 160;
+            // 
+            // After
+            // 
+            this.After.DataPropertyName = "After";
+            this.After.HeaderText = "After";
+            this.After.Name = "After";
             // 
             // Reminder
             // 
@@ -245,7 +257,7 @@ namespace PoE_Leveling_Helper
             this.tabPage2.Location = new System.Drawing.Point(4, 24);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(751, 608);
+            this.tabPage2.Size = new System.Drawing.Size(1231, 608);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Settings";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -341,11 +353,25 @@ namespace PoE_Leveling_Helper
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.deleteToolStripMenuItem});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(108, 26);
+            // 
+            // deleteToolStripMenuItem
+            // 
+            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.deleteToolStripMenuItem.Text = "Delete";
+            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 661);
+            this.ClientSize = new System.Drawing.Size(1264, 661);
             this.Controls.Add(this.Reminders);
             this.MinimumSize = new System.Drawing.Size(700, 500);
             this.Name = "Form1";
@@ -357,6 +383,7 @@ namespace PoE_Leveling_Helper
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
+            this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -385,12 +412,15 @@ namespace PoE_Leveling_Helper
         private System.Windows.Forms.Button btn_clear;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ComboBox comb_part;
-        private System.Windows.Forms.DataGridViewComboBoxColumn Type;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Level;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Reminder;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn Completed;
         private System.Windows.Forms.Button btn_uncomplete_all;
         private System.Windows.Forms.CheckBox checkBox_mark_complete;
+        private System.Windows.Forms.DataGridViewComboBoxColumn Type;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Level;
+        private System.Windows.Forms.DataGridViewComboBoxColumn After;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Reminder;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn Completed;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
     }
 }
 

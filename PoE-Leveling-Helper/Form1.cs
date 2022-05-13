@@ -1,16 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Media;
-using System.Resources;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using PoE_Leveling_Helper.Helper;
 using PoE_Leveling_Helper.Model;
@@ -29,10 +21,19 @@ namespace PoE_Leveling_Helper
 
         private struct ColumnIndex
         {
-            public static int Type = 0;
-            public static int TypeValue = 1;
-            public static int Reminder = 2;
-            public static int Completed = 3;
+            public const int Type = 0;
+            public const int TypeValue = 1;
+            public const int After = 2;
+            public const int Reminder = 3;
+            public const int Completed = 4;
+        }
+
+        private struct Types
+        {
+            public const string Level = "Level";
+            public const string Zone = "Zone";
+            public const string ZoneP1 = "Zone: Part 1";
+            public const string ZoneP2 = "Zone: Part 2";
         }
 
         public Form1()
@@ -41,10 +42,6 @@ namespace PoE_Leveling_Helper
             _soundPlayer.Load();
 
             InitializeComponent();
-
-#if DEBUG
-            btn_test.Visible = true;
-#endif
 
             txt_poe_folder.Text = Settings.Default.poe_path;
             txt_char_name.Text = Settings.Default.char_name;
@@ -55,6 +52,7 @@ namespace PoE_Leveling_Helper
             _dataTable = new DataTable("reminders");
             _dataTable.Columns.Add("Type");
             _dataTable.Columns.Add("Level");
+            _dataTable.Columns.Add("After");
             _dataTable.Columns.Add("Reminder");
             _dataTable.Columns.Add("Completed");
 
@@ -62,11 +60,12 @@ namespace PoE_Leveling_Helper
             _dataTable.ReadXml(reader);
 
             dataGridView1.DataSource = _dataTable;
+            ((DataGridViewComboBoxColumn)dataGridView1.Columns["Type"]).Items.AddRange(new[]{ Types.Level, Types.ZoneP1, Types.ZoneP2 });
 
             _areasPart1AutoCompleteSource = new AutoCompleteStringCollection();
-            _areasPart1AutoCompleteSource.AddRange(Resources.areas_part1.Split("\r\n"));
+            _areasPart1AutoCompleteSource.AddRange(Resources.areas_part1.Split("\n"));
             _areasPart2AutoCompleteSource = new AutoCompleteStringCollection();
-            _areasPart2AutoCompleteSource.AddRange(Resources.areas_part2.Split("\r\n"));
+            _areasPart2AutoCompleteSource.AddRange(Resources.areas_part2.Split("\n"));
 
             OpenLogFile();
 
@@ -105,19 +104,19 @@ namespace PoE_Leveling_Helper
                         var mZone = Regex.Match(line, @"^.*: You have entered (?<zone>.*)\.$");
 
                         if (mLevel.Success || mZone.Success)
-                            ClearSelection();
+                            dataGridView1.ClearSelection();
 
                         if (mLevel.Success)
                         {
                             var name = mLevel.Groups["name"].Value;
                             var level = mLevel.Groups["level"].Value;
-                            CheckAndNotifyLevel(name, level);
+                            CheckAndNotify(Types.Level, name, level);
                         }
 
                         if (mZone.Success)
                         {
                             var zone = mZone.Groups["zone"].Value;
-                            CheckAndNotifyZone(zone);
+                            CheckAndNotify(Types.Zone, zone);
                         }
                     }
                 }
@@ -151,92 +150,100 @@ namespace PoE_Leveling_Helper
             }
         }
 
-        private void ClearSelection()
-        {
-            foreach (DataGridViewRow row in dataGridView1.Rows)
-                row.Selected = false;
-        }
-
-        private void CheckAndNotifyLevel(string name, string level)
+        private void CheckAndNotify(string type, string value, string name = null)
         {
             string textToSpeak = "";
-            bool foundMatch = false;
-
-            foreach (DataGridViewRow row in dataGridView1.Rows)
+            for (int i = 0; i < dataGridView1.Rows.Count; i++)
             {
-                try
-                {
-                    string rLevel = (string) row.Cells[ColumnIndex.TypeValue].Value;
-                    string rMessage = (string) row.Cells[ColumnIndex.Reminder].Value;
+                DataGridViewRow row = dataGridView1.Rows[i];
+                if (row.IsNewRow)
+                    break;
 
-                    object rCompletedVal = row.Cells[ColumnIndex.Completed].Value;
-                    if (rCompletedVal is string completedVal && completedVal == "true")
+                object rAfter = row.Cells[ColumnIndex.After].Value;
+                if (rAfter is string strAfter && strAfter != "")
+                {
+                    var iAfter = Int32.Parse(strAfter) - 1;
+                    object rOther = dataGridView1.Rows[iAfter].Cells[ColumnIndex.Completed].Value;
+                    if (!isChecked(rOther))
+                        break;
+                }
+
+                object rCompletedVal = row.Cells[ColumnIndex.Completed].Value;
+                if (isChecked(rCompletedVal))
+                    break;
+
+                switch (type)
+                {
+                    case Types.Level:
+                        textToSpeak += GetMessageLevel(name, value, row);
                         break;
 
-                    if (rLevel == level && (txt_char_name.Text == "" || txt_char_name.Text == name))
-                    {
-                        foundMatch = true;
-                        textToSpeak += "Level " + rLevel + ". " + rMessage + ".\r\n";
-                        row.Selected = true;
+                    case Types.Zone:
+                    case Types.ZoneP1:
+                    case Types.ZoneP2:
+                        textToSpeak += GetMessageZone(value, row);
+                        break;
 
-                        if (checkBox_mark_complete.Checked)
-                            row.Cells[ColumnIndex.Completed].Value = true;
-                    }
-                }
-                catch (Exception)
-                {
-                    // ignored
+                    default:
+                        break;
                 }
             }
 
-            if (foundMatch && checkBox_alert.Checked)
+            if (textToSpeak != "" && checkBox_alert.Checked)
                 _soundPlayer.Play();
 
-            if (checkBox_tts.Checked)
+            if (textToSpeak != "" && checkBox_tts.Checked)
                 TextToSpeech.Speak(textToSpeak);
         }
 
-        private void CheckAndNotifyZone(string zone)
+        private string GetMessageLevel(string name, string level, DataGridViewRow row)
         {
-            string textToSpeak = "";
-            bool foundMatch = false;
+            string rType = row.Cells[ColumnIndex.Type].Value.ToString();
+            if (rType != "Level")
+                return "";
 
-            foreach (DataGridViewRow row in dataGridView1.Rows)
+            string rLevel = row.Cells[ColumnIndex.TypeValue].Value.ToString();
+            string rMessage = row.Cells[ColumnIndex.Reminder].Value.ToString();
+
+            if (rLevel == level && (txt_char_name.Text == "" || txt_char_name.Text == name))
             {
-                try
-                {
-                    if (row.IsNewRow)
-                        break;
+                row.Selected = true;
 
-                    string rType = (string) row.Cells[ColumnIndex.Type].Value;
-                    string rZone = (string) row.Cells[ColumnIndex.TypeValue].Value;
-                    string rMessage = (string) row.Cells[ColumnIndex.Reminder].Value;
+                if (checkBox_mark_complete.Checked)
+                    row.Cells[ColumnIndex.Completed].Value = true;
 
-                    object rCompletedVal = row.Cells[ColumnIndex.Completed].Value;
-                    if (rCompletedVal is string completedVal && completedVal == "true")
-                        break;
-
-                    if (rZone == zone && (comb_part.Text == "" || rType == @"Zone: " + comb_part.Text))
-                    {
-                        foundMatch = true;
-                        textToSpeak += "Zone " + rZone + ". " + rMessage + ".\r\n";
-                        row.Selected = true;
-
-                        if (checkBox_mark_complete.Checked)
-                            row.Cells[ColumnIndex.Completed].Value = "true";
-                    }
-                }
-                catch (Exception)
-                {
-                    // ignored
-                }
+                return "Level " + rLevel + ". " + rMessage + ".\r\n";
             }
 
-            if (foundMatch && checkBox_alert.Checked)
-                _soundPlayer.Play();
+            return "";
+        }
 
-            if (checkBox_tts.Checked)
-                TextToSpeech.Speak(textToSpeak);
+        private string GetMessageZone(string zone, DataGridViewRow row)
+        {
+            string rType = row.Cells[ColumnIndex.Type].Value.ToString();
+            string rZone = row.Cells[ColumnIndex.TypeValue].Value.ToString();
+            string rMessage = row.Cells[ColumnIndex.Reminder].Value.ToString();
+
+            object rCompletedVal = row.Cells[ColumnIndex.Completed].Value;
+            if (isChecked(rCompletedVal))
+                return "";
+
+            if (rZone == zone && (comb_part.Text == "" || rType == @"Zone: " + comb_part.Text))
+            {
+                row.Selected = true;
+
+                if (checkBox_mark_complete.Checked)
+                    row.Cells[ColumnIndex.Completed].Value = true;
+
+                return "Zone " + rZone + ". " + rMessage + ".\r\n";
+            }
+
+            return "";
+        }
+
+        private bool isChecked(object val)
+        {
+            return (val != null && val is not DBNull && Boolean.Parse((string)val));
         }
 
         private void txt_char_name_TextChanged(object sender, EventArgs e)
@@ -282,7 +289,10 @@ namespace PoE_Leveling_Helper
 
         private void button1_Click(object sender, EventArgs e)
         {
-            CheckAndNotifyLevel("test", "101");
+            var row = dataGridView1.Rows[dataGridView1.SelectedCells[0].RowIndex];
+            var type = (string) row.Cells[ColumnIndex.Type].Value;
+            var val = (string) row.Cells[ColumnIndex.TypeValue].Value;
+            CheckAndNotify(type, val);
         }
 
         private void btn_import_Click(object sender, EventArgs e)
@@ -355,6 +365,40 @@ namespace PoE_Leveling_Helper
         {
             foreach (DataGridViewRow row in dataGridView1.Rows)
                 row.Cells[ColumnIndex.Completed].Value = "false";
+        }
+
+        private void dataGridView1_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
+        {
+        }
+
+        private void dataGridView1_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            var after = ((DataGridViewComboBoxColumn)dataGridView1.Columns["After"]);
+            after.Items.Clear();
+            after.Items.Add("");
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                row.HeaderCell.Value = String.Format("{0}", row.Index + 1);
+                after.Items.Add((row.Index + 1).ToString());
+            }
+        }
+
+        private void dataGridView1_DefaultValuesNeeded(object sender, DataGridViewRowEventArgs e)
+        {
+            e.Row.SetValues(new object[] { Types.Level, "", "", "", false });
+        }
+
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var row = dataGridView1.SelectedCells[0].OwningRow;
+            dataGridView1.Rows.Remove(row);
+        }
+
+        private void dataGridView1_CellContextMenuStripNeeded(object sender, DataGridViewCellContextMenuStripNeededEventArgs e)
+        {
+            dataGridView1.ClearSelection();
+            dataGridView1.Rows[e.RowIndex].Selected = true;
+            e.ContextMenuStrip = contextMenuStrip1;
         }
     }
 }
