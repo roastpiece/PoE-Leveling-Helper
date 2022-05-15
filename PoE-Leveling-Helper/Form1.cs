@@ -157,7 +157,7 @@ namespace PoE_Leveling_Helper
             {
                 DataGridViewRow row = dataGridView1.Rows[i];
                 if (row.IsNewRow)
-                    break;
+                    continue;
 
                 object rAfter = row.Cells[ColumnIndex.After].Value;
                 if (rAfter is string strAfter && strAfter != "")
@@ -165,12 +165,12 @@ namespace PoE_Leveling_Helper
                     var iAfter = Int32.Parse(strAfter) - 1;
                     object rOther = dataGridView1.Rows[iAfter].Cells[ColumnIndex.Completed].Value;
                     if (!isChecked(rOther))
-                        break;
+                        continue;
                 }
 
                 object rCompletedVal = row.Cells[ColumnIndex.Completed].Value;
                 if (isChecked(rCompletedVal))
-                    break;
+                    continue;
 
                 switch (type)
                 {
