@@ -19,7 +19,7 @@ namespace PoE_Leveling_Helper.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -97,7 +97,9 @@ namespace PoE_Leveling_Helper.Properties {
         ///The Broken Bridge
         ///The Chamber of Sins Level 2
         ///The Crypt Level 1
-        ///The Western Fo [rest of string was truncated]&quot;;.
+        ///The Western Forest
+        ///The Weaver&apos;s Chambers
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string areas_part1 {
             get {
@@ -134,11 +136,33 @@ namespace PoE_Leveling_Helper.Properties {
         ///The Ashen Fields
         ///The Northern Forest
         ///The Dread Thicket
-        ///The Ca [rest of string was truncated]&quot;;.
+        ///The Causeway
+        ///The Vaal City
+        ///The Tem [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string areas_part2 {
             get {
                 return ResourceManager.GetString("areas_part2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] skillGems {
+            get {
+                object obj = ResourceManager.GetObject("skillGems", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] supportGems {
+            get {
+                object obj = ResourceManager.GetObject("supportGems", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }

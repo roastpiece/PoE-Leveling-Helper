@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Data;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Media;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using System.Text.Json;
 using PoE_Leveling_Helper.Helper;
 using PoE_Leveling_Helper.Model;
 using PoE_Leveling_Helper.Properties;
@@ -18,6 +21,8 @@ namespace PoE_Leveling_Helper
         private long _lastFileSize = -1;
         private readonly AutoCompleteStringCollection _areasPart1AutoCompleteSource;
         private readonly AutoCompleteStringCollection _areasPart2AutoCompleteSource;
+        private readonly AutoCompleteStringCollection _gemsAutoCompleteSource;
+        private Dictionary<string, Gem> _gems;
 
         private struct ColumnIndex
         {
@@ -32,6 +37,7 @@ namespace PoE_Leveling_Helper
         {
             public const string Level = "Level";
             public const string Zone = "Zone";
+            public const string Gem = "Gem";
             public const string ZoneP1 = "Zone: Part 1";
             public const string ZoneP2 = "Zone: Part 2";
         }
@@ -60,12 +66,24 @@ namespace PoE_Leveling_Helper
             _dataTable.ReadXml(reader);
 
             dataGridView1.DataSource = _dataTable;
-            ((DataGridViewComboBoxColumn)dataGridView1.Columns["Type"]).Items.AddRange(new[]{ Types.Level, Types.ZoneP1, Types.ZoneP2 });
+            ((DataGridViewComboBoxColumn)dataGridView1.Columns["Type"]).Items.AddRange(new[] { Types.Level, Types.Gem, Types.ZoneP1, Types.ZoneP2 });
 
             _areasPart1AutoCompleteSource = new AutoCompleteStringCollection();
             _areasPart1AutoCompleteSource.AddRange(Resources.areas_part1.Split("\n"));
             _areasPart2AutoCompleteSource = new AutoCompleteStringCollection();
             _areasPart2AutoCompleteSource.AddRange(Resources.areas_part2.Split("\n"));
+
+            var skillGems = JsonSerializer.Deserialize<Gem[]>(Resources.skillGems);
+            var supportGems = JsonSerializer.Deserialize<Gem[]>(Resources.supportGems);
+            var gems = skillGems.Concat(supportGems);
+            _gemsAutoCompleteSource = new AutoCompleteStringCollection();
+            _gemsAutoCompleteSource.AddRange(gems.Select(v => v.name).ToArray());
+
+            _gems = new Dictionary<string, Gem>();
+            foreach (var gem in gems)
+            {
+                _gems.Add(gem.name, gem);
+            }
 
             OpenLogFile();
 
@@ -175,13 +193,17 @@ namespace PoE_Leveling_Helper
                 switch (type)
                 {
                     case Types.Level:
-                        textToSpeak += GetMessageLevel(name, value, row);
+                        textToSpeak += GetMessageLevel(name, int.Parse(value), row);
                         break;
 
                     case Types.Zone:
                     case Types.ZoneP1:
                     case Types.ZoneP2:
                         textToSpeak += GetMessageZone(value, row);
+                        break;
+
+                    case Types.Gem:
+                        textToSpeak += GetMessageGem(int.Parse(value), row);
                         break;
 
                     default:
@@ -196,16 +218,16 @@ namespace PoE_Leveling_Helper
                 TextToSpeech.Speak(textToSpeak);
         }
 
-        private string GetMessageLevel(string name, string level, DataGridViewRow row)
+        private string GetMessageLevel(string name, int level, DataGridViewRow row)
         {
             string rType = row.Cells[ColumnIndex.Type].Value.ToString();
             if (rType != "Level")
                 return "";
 
-            string rLevel = row.Cells[ColumnIndex.TypeValue].Value.ToString();
+            int rLevel = int.Parse(row.Cells[ColumnIndex.TypeValue].Value.ToString());
             string rMessage = row.Cells[ColumnIndex.Reminder].Value.ToString();
 
-            if (rLevel == level && (txt_char_name.Text == "" || txt_char_name.Text == name))
+            if (rLevel <= level && (txt_char_name.Text == "" || txt_char_name.Text == name))
             {
                 row.Selected = true;
 
@@ -224,10 +246,6 @@ namespace PoE_Leveling_Helper
             string rZone = row.Cells[ColumnIndex.TypeValue].Value.ToString();
             string rMessage = row.Cells[ColumnIndex.Reminder].Value.ToString();
 
-            object rCompletedVal = row.Cells[ColumnIndex.Completed].Value;
-            if (isChecked(rCompletedVal))
-                return "";
-
             if (rZone == zone && (comb_part.Text == "" || rType == @"Zone: " + comb_part.Text))
             {
                 row.Selected = true;
@@ -238,6 +256,23 @@ namespace PoE_Leveling_Helper
                 return "Zone " + rZone + ". " + rMessage + ".\r\n";
             }
 
+            return "";
+        }
+
+        private string GetMessageGem(int level, DataGridViewRow row)
+        {
+            string rMessage = row.Cells[ColumnIndex.Reminder].Value.ToString();
+            Gem gem;
+            if (_gems.TryGetValue(row.Cells[ColumnIndex.TypeValue].Value.ToString(), out gem))
+            {
+                if (level < gem.reqLevel)
+                    return "";
+
+                if (checkBox_mark_complete.Checked)
+                    row.Cells[ColumnIndex.Completed].Value = true;
+
+                return "Gem " + gem.name + ": " + rMessage;
+            }
             return "";
         }
 
@@ -290,8 +325,13 @@ namespace PoE_Leveling_Helper
         private void button1_Click(object sender, EventArgs e)
         {
             var row = dataGridView1.Rows[dataGridView1.SelectedCells[0].RowIndex];
-            var type = (string) row.Cells[ColumnIndex.Type].Value;
-            var val = (string) row.Cells[ColumnIndex.TypeValue].Value;
+            var type = (string)row.Cells[ColumnIndex.Type].Value;
+            var val = (string)row.Cells[ColumnIndex.TypeValue].Value;
+
+            Gem gem;
+            if (type == Types.Gem && _gems.TryGetValue(val, out gem))
+                val = gem.reqLevel.ToString();
+
             CheckAndNotify(type, val);
         }
 
@@ -300,7 +340,7 @@ namespace PoE_Leveling_Helper
             if (MessageBox.Show("This will overwrite your current reminders. Continue?", "Attention",
                 MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
                 return;
-            
+
             openFileDialog1.Filter = @"XML Files (*.xml)|*.xml|All Files (*.*)|*.*";
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
@@ -339,13 +379,23 @@ namespace PoE_Leveling_Helper
             {
                 try
                 {
-                    string type = (string) dataGridView1.Rows[dataGridView1.CurrentCell.RowIndex].Cells[ColumnIndex.Type].Value;
-                    if (type != ReminderType.ZonePart1 && type != ReminderType.ZonePart2)
-                        return;
+                    string type = (string)dataGridView1.Rows[dataGridView1.CurrentCell.RowIndex].Cells[ColumnIndex.Type].Value;
 
-                    var autoCompleteSource = type == ReminderType.ZonePart1
-                        ? _areasPart1AutoCompleteSource
-                        : _areasPart2AutoCompleteSource;
+                    AutoCompleteStringCollection autoCompleteSource;
+                    switch (type)
+                    {
+                        case Types.ZoneP1:
+                            autoCompleteSource = _areasPart1AutoCompleteSource;
+                            break;
+                        case Types.ZoneP2:
+                            autoCompleteSource = _areasPart2AutoCompleteSource;
+                            break;
+                        case Types.Gem:
+                            autoCompleteSource = _gemsAutoCompleteSource;
+                            break;
+                        default:
+                            return;
+                    }
 
                     if (e.Control is TextBox boxControl)
                     {
@@ -399,6 +449,46 @@ namespace PoE_Leveling_Helper
             dataGridView1.ClearSelection();
             dataGridView1.Rows[e.RowIndex].Selected = true;
             e.ContextMenuStrip = contextMenuStrip1;
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://docs.google.com/spreadsheets/d/1bm_5CbVppiapbR7BWYjtByKEK8i0xZS9ARDx9tDgUeA/edit?usp=sharing");
+        }
+
+        private void dataGridView1_AutoComplete(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex == ColumnIndex.TypeValue)
+            {
+                try
+                {
+                    string type = (string)dataGridView1.Rows[dataGridView1.CurrentCell.RowIndex].Cells[ColumnIndex.Type].Value;
+                    switch (type)
+                    {
+                        case Types.Gem:
+                            var row = dataGridView1.Rows[e.RowIndex];
+                            Gem gem;
+                            if (row.Cells[ColumnIndex.Reminder].Value.ToString() == "" && _gems.TryGetValue(dataGridView1.Rows[e.RowIndex].Cells[ColumnIndex.TypeValue].Value.ToString(), out gem))
+                            {
+                                var reminder = String.Format("Level {0}.", gem.reqLevel);
+                                if (gem.quest != null)
+                                    reminder += String.Format(" Quest: {0}; {1}.", gem.quest.objective, gem.quest.completion);
+                                if (gem.vendor != null)
+                                    reminder += String.Format(" Vendor: {0}, after Quest: {1}.", gem.vendor.name, gem.vendor.quest);
+
+                                row.Cells[ColumnIndex.Reminder].Value = reminder;
+                            }
+                            break;
+                        default:
+                            return;
+                    }
+                }
+
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception);
+                }
+            }
         }
     }
 }
